@@ -1,0 +1,18 @@
+{
+  "name": "lead-scraper-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard to scrape business leads from Google Maps and Apollo via Apify, with CSV export.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "apify-client": "^2.9.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.14"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+
+# Secrets and personal config — never commit these
+.env
+.env.*
+!.env.example
+data/
+
+# Exports
+*.csv

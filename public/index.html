@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LeadFlow AI — Cold Email Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7FA; --card:#FFFFFF; --border:#E7EBF1; --line:#EFF2F7;
+    --ink:#0F172A; --ink-2:#334155; --muted:#7A879B;
+    --blue:#2563EB; --blue-d:#1D4ED8; --blue-soft:#EFF4FF;
+    --green:#16A34A; --green-soft:#ECFDF3;
+    --purple:#7C3AED; --purple-soft:#F4F0FF;
+    --amber:#D97706; --amber-soft:#FFF7E6;
+    --red:#DC2626; --red-soft:#FEF2F2;
+    --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.04);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",sans-serif;
+    font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;
+    display:flex;
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  aside{
+    width:242px; flex:0 0 242px; background:#fff; border-right:1px solid var(--border);
+    display:flex; flex-direction:column; height:100vh; position:sticky; top:0; padding:20px 14px;
+  }
+  .brand{display:flex; align-items:center; gap:11px; padding:6px 8px 22px}
+  .brand .mark{
+    width:36px;height:36px;border-radius:11px;flex:0 0 36px;
+    background:linear-gradient(140deg,var(--blue),#4F86FF);
+    display:grid;place-items:center;color:#fff;
+    box-shadow:0 4px 10px rgba(37,99,235,.28);
+  }
+  .brand .nm{font-weight:800;font-size:15px;letter-spacing:-.01em;line-height:1.2}
+  .brand .sb{font-size:11.5px;color:var(--muted);font-weight:500}
+  nav{display:flex;flex-direction:column;gap:2px}
+  .navitem{
+    display:flex;align-items:center;gap:11px;padding:9.5px 11px;border-radius:10px;
+    color:var(--ink-2);font-weight:600;font-size:13.5px;cursor:pointer;border:none;
+    background:none;width:100%;text-align:left;font-family:inherit;transition:.15s;
+  }
+  .navitem svg{width:18px;height:18px;flex:0 0 18px;stroke:currentColor;opacity:.75}
+  .navitem:hover{background:#F7F9FC}
+  .navitem.active{background:var(--blue-soft);color:var(--blue)}
+  .navitem.active svg{opacity:1}
+  .navlabel{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#A3AEC0;padding:18px 11px 7px}
+  .side-foot{margin-top:auto}
+  .agentpill{background:var(--green-soft);border-radius:11px;padding:11px 13px}
+  .agentpill .t{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12.5px;color:#15803D}
+  .agentpill .d{font-size:11px;color:#3F9668;margin-top:2px}
+  .lampe{width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+
+  /* ---------- MAIN ---------- */
+  main{flex:1;min-width:0;padding:30px 36px 60px;overflow-x:hidden}
+  .head{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+  h1{font-size:27px;font-weight:800;letter-spacing:-.025em;margin:0}
+  .sub{color:var(--muted);font-size:13px;margin-top:3px}
+  .head-r{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .chip{
+    display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);
+    border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--ink-2);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:#CBD5E1}
+  .dot.ok{background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.16)}
+  .dot.off{background:#EF4444;box-shadow:0 0 0 3px rgba(239,68,68,.14)}
+
+  /* ---------- STAT CARDS ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:20px}
+  .stat{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow);animation:rise .5s both;
+  }
+  .stats .stat:nth-child(1){animation-delay:.03s}
+  .stats .stat:nth-child(2){animation-delay:.08s}
+  .stats .stat:nth-child(3){animation-delay:.13s}
+  .stats .stat:nth-child(4){animation-delay:.18s}
+  @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;margin-bottom:15px}
+  .ic svg{width:19px;height:19px;stroke-width:2}
+  .ic.b{background:var(--blue-soft);color:var(--blue)}
+  .ic.g{background:var(--green-soft);color:var(--green)}
+  .ic.p{background:var(--purple-soft);color:var(--purple)}
+  .ic.a{background:var(--amber-soft);color:var(--amber)}
+  .stat .n{font-size:29px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+  .stat .l{font-weight:700;font-size:13.5px;margin-top:3px}
+  .stat .s{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+  /* ---------- BANNER ---------- */
+  .banner-ai{
+    background:linear-gradient(122deg,var(--blue) 0%,#1E4FD8 55%,#1A45C4 100%);
+    border-radius:var(--radius);padding:19px 24px;color:#fff;display:flex;
+    align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:22px;
+    box-shadow:0 6px 18px rgba(37,99,235,.22);
+  }
+  .banner-ai .bic{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.19);display:grid;place-items:center;flex:0 0 36px}
+  .banner-ai .bt{font-weight:700;font-size:14.5px}
+  .banner-ai .bd{font-size:12.5px;opacity:.85;margin-top:1px}
+  .banner-ai .bstats{margin-left:auto;display:flex;gap:30px;text-align:right}
+  .banner-ai .bstats .v{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .banner-ai .bstats .k{font-size:11px;opacity:.8}
+
+  /* ---------- CARDS ---------- */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+  .card > h2{font-size:16px;font-weight:800;letter-spacing:-.015em;margin:0 0 3px}
+  .card > .csub{color:var(--muted);font-size:12.5px;margin-bottom:20px}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .field{flex:1;min-width:190px;margin-bottom:16px}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+  input[type=text],input[type=number],textarea{
+    width:100%;padding:10.5px 13px;background:#fff;border:1px solid #DFE5EE;border-radius:10px;
+    color:var(--ink);font-size:13.5px;font-family:inherit;outline:none;transition:.15s;
+  }
+  input::placeholder,textarea::placeholder{color:#A9B4C5}
+  input:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3.5px rgba(37,99,235,.11)}
+  textarea{resize:vertical;min-height:210px;line-height:1.65}
+  .srcs{display:flex;gap:10px;flex-wrap:wrap}
+  .src{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#fff;border:1px solid #DFE5EE;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;user-select:none;transition:.15s}
+  .src:hover{border-color:#C3CEDE}
+  .src input{width:15px;height:15px;accent-color:var(--blue);margin:0}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:7px}
+  .hint code{background:#F1F4F9;border:1px solid var(--line);padding:1px 5px;border-radius:5px;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-2)}
+  .apollo-box{display:none} .apollo-box.show{display:block}
+  .acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{font-family:inherit;font-size:13.5px;font-weight:700;padding:11px 18px;border-radius:10px;border:none;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .b-primary{background:var(--blue);color:#fff;box-shadow:0 2px 7px rgba(37,99,235,.26)}
+  .b-primary:not(:disabled):hover{background:var(--blue-d)}
+  .b-ghost{background:#fff;color:var(--ink-2);border:1px solid #DFE5EE}
+  .b-ghost:not(:disabled):hover{background:#F7F9FC}
+  .b-green{background:var(--green);color:#fff}
+  .b-purple{background:var(--purple);color:#fff}
+  .b-red{background:var(--red);color:#fff}
+  .msg{padding:11px 15px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:14px}
+  .msg.err{background:var(--red-soft);color:#B91C1C;border:1px solid #FBD5D5}
+  .msg.warn{background:var(--amber-soft);color:#92400E;border:1px solid #FDE9C8}
+  .msg.ok{background:var(--green-soft);color:#15803D;border:1px solid #C9EFD8}
+
+  /* ---------- TABLE ---------- */
+  .thead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .cnt{color:var(--muted);font-size:12.5px;font-weight:600}
+  .tscroll{overflow:auto;border:1px solid var(--border);border-radius:11px;max-height:440px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#F8FAFC;color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.05em;position:sticky;top:0;z-index:1}
+  tbody tr:hover{background:#FAFBFD}
+  tbody tr:last-child td{border-bottom:none}
+  td a{color:var(--blue);text-decoration:none;font-weight:600}
+  td a:hover{text-decoration:underline}
+  td.mono{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-2)}
+  td.wrapc{white-space:normal;min-width:280px;color:var(--ink-2);line-height:1.5}
+  .tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F1F4F9;color:var(--ink-2)}
+  .tag.sent{background:var(--green-soft);color:#15803D}
+  .tag.failed{background:var(--red-soft);color:#B91C1C}
+  .tag.pending{background:#F1F4F9;color:var(--muted)}
+  .empty{text-align:center;padding:52px 20px;color:var(--muted)}
+  .empty .eic{width:44px;height:44px;border-radius:12px;background:#F1F4F9;display:grid;place-items:center;margin:0 auto 12px;color:#9FAABB}
+  .spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .preview{background:#F8FAFC;border:1px solid var(--border);border-radius:11px;padding:18px;margin-top:14px;white-space:pre-wrap;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+  .preview .ps{color:var(--ink);font-weight:800;margin-bottom:9px;font-size:13px}
+  .view{display:none} .view.on{display:block}
+  @media(max-width:1080px){.stats{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:860px){body{flex-direction:column}aside{width:100%;flex:none;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto}nav{flex-direction:row}.navlabel,.side-foot{display:none}main{padding:22px 18px 50px}}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="19" height="19"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>
+    </div>
+    <div>
+      <div class="nm">LeadFlow AI</div>
+      <div class="sb">Cold Email Agent</div>
+    </div>
+  </div>
+
+  <nav>
+    <button class="navitem active" data-view="dash">
+      <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </button>
+    <button class="navitem" data-view="leads">
+      <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      Leads
+    </button>
+    <button class="navitem" data-view="camp">
+      <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+      Campaign
+    </button>
+    <div class="navlabel">INSIGHTS</div>
+    <button class="navitem" data-view="activity">
+      <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Activity
+    </button>
+    <button class="navitem" data-view="settings">
+      <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 2.6 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H7a1.7 1.7 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <div class="side-foot">
+    <div class="agentpill">
+      <div class="t"><span class="lampe"></span> Agent Ready</div>
+      <div class="d" id="agentSub">Scrape · Personalize · Send</div>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div class="head">
+    <div>
+      <h1 id="pageTitle">Overview</h1>
+      <div class="sub" id="pageSub">AI lead sourcing &amp; personalized cold outreach</div>
+    </div>
+    <div class="head-r">
+      <span class="chip"><span class="dot" id="dotApify"></span>Apify</span>
+      <span class="chip"><span class="dot" id="dotAI"></span>Groq AI</span>
+      <span class="chip"><span class="dot" id="dotGmail"></span>Gmail</span>
+    </div>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="view on" id="v-dash">
+    <div class="stats">
+      <div class="stat">
+        <div class="ic b"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        <div class="n" id="kLeads">0</div><div class="l">Total Leads</div><div class="s">With verified email</div>
+      </div>
+      <div class="stat">
+        <div class="ic p"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1-6.3-4.6L5.7 21 8 13.9l-6-4.5h7.6z"/></svg></div>
+        <div class="n" id="kPers">0</div><div class="l">Personalized</div><div class="s">Custom line written</div>
+      </div>
+      <div class="stat">
+        <div class="ic g"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></div>
+        <div class="n" id="kSent">0</div><div class="l">Emails Sent</div><div class="s">Delivered via Gmail</div>
+      </div>
+      <div class="stat">
+        <div class="ic a"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <div class="n" id="kQueue">0</div><div class="l">In Queue</div><div class="s">Waiting to send</div>
+      </div>
+    </div>
+
+    <div class="banner-ai">
+      <div class="bic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" width="19" height="19"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></div>
+      <div>
+        <div class="bt" id="bannerTitle">Agent idle</div>
+        <div class="bd" id="bannerDesc">Find leads, personalize with AI, then send on a 3–4 minute drip</div>
+      </div>
+      <div class="bstats">
+        <div><div class="v" id="bSent">0</div><div class="k">sent</div></div>
+        <div><div class="v" id="bQueue">0</div><div class="k">queued</div></div>
+        <div><div class="v" id="bFailed">0</div><div class="k">failed</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Find leads</h2>
+      <div class="csub">Search Google Maps &amp; Apollo. Only businesses with an email address are kept.</div>
+      <div class="row">
+        <div class="field"><label for="keyword">Keyword / business type</label><input type="text" id="keyword" placeholder="med spa, dentist, marketing agency" /></div>
+        <div class="field"><label for="location">Location</label><input type="text" id="location" placeholder="Austin, Texas" /></div>
+        <div class="field" style="max-width:150px"><label for="maxResults">Max / source</label><input type="number" id="maxResults" value="30" min="1" max="1000" /></div>
+      </div>
+      <div class="field">
+        <label>Sources</label>
+        <div class="srcs">
+          <label class="src"><input type="checkbox" id="srcGoogle" checked /> Google Maps</label>
+          <label class="src"><input type="checkbox" id="srcApollo" /> Apollo.io</label>
+        </div>
+      </div>
+      <div class="field apollo-box" id="apolloBox">
+        <label for="apolloUrl">Apollo search URL</label>
+        <input type="text" id="apolloUrl" placeholder="https://app.apollo.io/#/people?..." />
+        <div class="hint">Build your People search on apollo.io, then paste the browser URL here.</div>
+      </div>
+      <div id="scrapeBanner"></div>
+      <div class="acts">
+        <button class="b-primary" id="scrapeBtn">Find Leads</button>
+        <button class="b-purple" id="personalizeBtn" disabled>Personalize with AI</button>
+        <button class="b-ghost" id="csvBtn" disabled>Export CSV</button>
+        <button class="b-ghost" id="recentBtn">Recent Search</button>
+        <button class="b-ghost" id="clearBtn">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thead"><div><h2>Leads</h2><div class="csub" style="margin:0">Businesses found with a reachable email address</div></div><span class="cnt" id="countDash">No results yet</span></div>
+      <div id="resultsAreaDash">
+        <div class="empty"><div class="eic"><svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>Run a search above to populate leads.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEADS ============ -->
+  <section class="view" id="v-leads">
+    <div class="card">
+      <div class="thead"><div><h2>Leads</h2><div class="csub" style="margin:0">Scraped businesses with a reachable email</div></div><span class="cnt" id="count">No results yet</span></div>
+      <div id="resultsArea">
+        <div class="empty"><div class="eic"><svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>No leads yet — run a search from the Dashboard.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAMPAIGN ============ -->
+  <section class="view" id="v-camp">
+    <div class="card">
+      <h2>Compose campaign</h2>
+      <div class="csub">Each email is sent individually from your Gmail, 3–4 minutes apart.</div>
+      <div class="row">
+        <div class="field" style="max-width:260px"><label for="fromName">Sender name</label><input type="text" id="fromName" placeholder="Your name" /></div>
+        <div class="field"><label for="subject">Subject</label><input type="text" id="subject" placeholder="Quick Question" /></div>
+      </div>
+      <div class="field">
+        <label for="body">Email body</label>
+        <textarea id="body" placeholder="Write your email…">Hi {{first_name}},
+
+{{personalized_line}}
+
+I help businesses like {{company}} turn more of their existing leads into booked calls.
+
+Would you be open to a short intro chat this week?
+
+Best,
+Your Name</textarea>
+        <div class="hint">Placeholders: <code>{{first_name}}</code> <code>{{name}}</code> <code>{{company}}</code> <code>{{title}}</code> <code>{{city}}</code> <code>{{personalized_line}}</code> — an unsubscribe line is appended automatically.</div>
+      </div>
+      <div id="campaignBanner"></div>
+      <div class="acts">
+        <button class="b-ghost" id="previewBtn" disabled>Preview first email</button>
+        <button class="b-green" id="startBtn" disabled>Start sending</button>
+        <button class="b-red" id="stopBtn" style="display:none">Stop campaign</button>
+      </div>
+      <div id="previewArea"></div>
+    </div>
+  </section>
+
+  <!-- ============ ACTIVITY ============ -->
+  <section class="view" id="v-activity">
+    <div class="card">
+      <div class="thead"><div><h2>Send activity</h2><div class="csub" style="margin:0">Live status of the current campaign</div></div><span class="cnt" id="nextSend"></span></div>
+      <div class="stats" style="margin-bottom:20px">
+        <div class="stat"><div class="ic g"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div class="n" id="stSent">0</div><div class="l">Sent</div></div>
+        <div class="stat"><div class="ic a"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
+        <div class="stat"><div class="ic b"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div><div class="n" id="stFailed">0</div><div class="l">Failed</div></div>
+        <div class="stat"><div class="ic p"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="n" id="stStatus" style="font-size:19px">idle</div><div class="l">Status</div></div>
+      </div>
+      <div class="tscroll"><table><thead><tr><th>Status</th><th>Business</th><th>Email</th><th>Detail</th></tr></thead><tbody id="campaignRows"><tr><td colspan="4" style="padding:34px;text-align:center;color:var(--muted)">No campaign running.</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view" id="v-settings">
+    <div class="card">
+      <h2>Connections</h2>
+      <div class="csub">Configured in your <code style="font-family:'JetBrains Mono',monospace">.env</code> file. Restart the server after changes.</div>
+      <div class="tscroll"><table><thead><tr><th>Service</th><th>Purpose</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Apify</strong></td><td>Google Maps &amp; Apollo scraping</td><td id="setApify"></td></tr>
+        <tr><td><strong>Groq</strong></td><td>AI email personalization</td><td id="setAI"></td></tr>
+        <tr><td><strong>Gmail SMTP</strong></td><td>Sending outbound email</td><td id="setGmail"></td></tr>
+      </tbody></table></div>
+      <div class="hint" style="margin-top:14px">Sending gap is controlled by <code>MIN_GAP_SECONDS</code> / <code>MAX_GAP_SECONDS</code> (currently 3–4 minutes).</div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let currentLeads = [], statusTimer = null, DEMO = false;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const savedLeads = () => fetch('/api/demo-leads').then(r => r.json()).then(d => d.leads || []);
+  const SEARCH_MS = 2500, WRITE_MS = 2000;
+  // Resolved before any action reads DEMO, so an early click can't fall
+  // through to the live scraper while /api/health is still in flight.
+  let healthReady;
+
+  const COLUMNS = [
+    { key:'source', label:'SOURCE' }, { key:'name', label:'BUSINESS' },
+    { key:'title', label:'TITLE' }, { key:'category', label:'CATEGORY' },
+    { key:'email', label:'EMAIL', mono:true }, { key:'phone', label:'PHONE' },
+    { key:'website', label:'SITE' },
+    { key:'personalizedLine', label:'PERSONALIZED LINE', wrap:true },
+    { key:'city', label:'CITY' }, { key:'linkedin', label:'LINKEDIN' },
+  ];
+
+  /* ---- nav ---- */
+  const TITLES = {
+    dash:['Overview','AI lead sourcing & personalized cold outreach'],
+    leads:['Leads','Every business the agent found with a reachable email'],
+    camp:['Campaign','Write once — the agent personalizes and sends each one'],
+    activity:['Activity','Live send status, one email every 3–4 minutes'],
+    settings:['Settings','API connections and sending configuration'],
+  };
+  document.querySelectorAll('.navitem').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.navitem').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const v = b.dataset.view;
+    document.querySelectorAll('.view').forEach(s => s.classList.remove('on'));
+    $('v-' + v).classList.add('on');
+    $('pageTitle').textContent = TITLES[v][0];
+    $('pageSub').textContent = TITLES[v][1];
+  }));
+
+  /* ---- health ---- */
+  const yes = '<span class="tag sent">Connected</span>', no = '<span class="tag failed">Not configured</span>';
+  healthReady = fetch('/api/health').then(r => r.json()).then(d => {
+    $('dotApify').className = 'dot ' + (d.hasToken ? 'ok' : 'off');
+    $('dotAI').className    = 'dot ' + (d.hasGroq ? 'ok' : 'off');
+    $('dotGmail').className = 'dot ' + (d.hasGmail ? 'ok' : 'off');
+    DEMO = !!d.demoMode;
+    $('setApify').innerHTML = d.hasToken ? yes : no;
+    $('setAI').innerHTML    = d.hasGroq ? yes : no;
+    $('setGmail').innerHTML = d.hasGmail ? yes : no;
+  }).catch(() => {});
+
+  /* Load the sender name / subject / body captured by `npm run setup`. */
+  fetch('/api/campaign/defaults').then(r => r.json()).then(d => {
+    if (d.fromName) $('fromName').value = d.fromName;
+    if (d.subject)  $('subject').value  = d.subject;
+    if (d.body)     $('body').value     = d.body;
+  }).catch(() => {});
+
+  $('srcApollo').addEventListener('change', e => $('apolloBox').classList.toggle('show', e.target.checked));
+
+  function msg(id, text, type){ $(id).innerHTML = text ? `<div class="msg ${type}">${text}</div>` : ''; }
+  function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function cell(col, val){
+    if (col.wrap) return `<td class="wrapc">${esc(val)}</td>`;
+    if (!val) return '<td></td>';
+    if (col.key === 'website' || col.key === 'linkedin'){
+      const h = val.startsWith('http') ? val : 'https://' + val;
+      return `<td><a href="${esc(h)}" target="_blank" rel="noopener">open</a></td>`;
+    }
+    if (col.key === 'email') return `<td class="mono">${esc(val)}</td>`;
+    if (col.key === 'source') return `<td><span class="tag">${esc(val)}</span></td>`;
+    return `<td>${esc(val)}</td>`;
+  }
+
+  function updateKpis(){
+    $('kLeads').textContent = currentLeads.length;
+    $('kPers').textContent  = currentLeads.filter(l => l.personalizedLine).length;
+  }
+
+  function render(leads){
+    currentLeads = leads;
+    const has = leads.length > 0;
+    const label = has ? `${leads.length} lead${leads.length===1?'':'s'}` : 'No results';
+    $('count').textContent = label; $('countDash').textContent = label;
+    ['csvBtn','personalizeBtn','previewBtn','startBtn'].forEach(b => $(b).disabled = !has);
+    updateKpis();
+    let html;
+    if (!has){
+      html = '<div class="empty"><div class="eic"><svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>Run a search above to populate leads.</div>';
+    } else {
+      const head = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
+      const rows = leads.map(l => '<tr>' + COLUMNS.map(c => cell(c, l[c.key])).join('') + '</tr>').join('');
+      html = `<div class="tscroll"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+    $('resultsArea').innerHTML = html;
+    $('resultsAreaDash').innerHTML = html;
+  }
+
+  async function scrape(){
+    const sources = [];
+    if ($('srcGoogle').checked) sources.push('google_maps');
+    if ($('srcApollo').checked) sources.push('apollo');
+    if (!sources.length){ msg('scrapeBanner','Pick at least one source.','err'); return; }
+    msg('scrapeBanner','');
+    const b = $('scrapeBtn'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Searching…';
+    try{
+      await healthReady;
+      if (DEMO){
+        const [leadsRaw] = await Promise.all([savedLeads(), wait(SEARCH_MS)]);
+        const leads = leadsRaw.map(({ personalizedLine, ...rest }) => rest);
+        render(leads);
+        $('bannerTitle').textContent = 'Leads ready';
+        $('bannerDesc').textContent = `${leads.length} results · ${$('keyword').value || 'dental clinic'} · ${$('location').value || 'Austin, Texas'}`;
+        return;
+      }
+      const r = await fetch('/api/scrape',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({keyword:$('keyword').value,location:$('location').value,maxResults:$('maxResults').value,apolloUrl:$('apolloUrl').value,sources})});
+      const d = await r.json();
+      if (!r.ok){ msg('scrapeBanner', d.error || 'Something went wrong.','err'); return; }
+      if (d.warnings?.length) msg('scrapeBanner', d.warnings.join(' · '),'warn');
+      render(d.leads || []);
+    }catch(e){ msg('scrapeBanner','Request failed: ' + e.message,'err'); }
+    finally{ b.disabled = false; b.textContent = 'Find Leads'; }
+  }
+
+  async function personalize(){
+    if (!currentLeads.length) return;
+    const b = $('personalizeBtn'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Writing…';
+    msg('scrapeBanner','');
+    try{
+      await healthReady;
+      if (DEMO){
+        const [saved] = await Promise.all([savedLeads(), wait(WRITE_MS)]);
+        const lines = new Map(saved.map(l => [l.email, l.personalizedLine]));
+        render(currentLeads.map(l => ({ ...l, personalizedLine: lines.get(l.email) || l.personalizedLine || '' })));
+        msg('scrapeBanner', `Personalized lines written for ${currentLeads.length} leads.`, 'ok');
+        return;
+      }
+      const r = await fetch('/api/personalize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leads:currentLeads})});
+      const d = await r.json();
+      if (!r.ok){ msg('scrapeBanner', d.error || 'Personalization failed.','err'); return; }
+      render(d.leads || currentLeads);
+      msg('scrapeBanner','Personalized lines added for ' + d.leads.filter(l=>l.personalizedLine).length + ' leads.','ok');
+    }catch(e){ msg('scrapeBanner','Request failed: ' + e.message,'err'); }
+    finally{ b.disabled = false; b.textContent = 'Personalize with AI'; }
+  }
+
+  async function preview(){
+    if (!currentLeads.length) return;
+    const r = await fetch('/api/campaign/preview',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({lead:currentLeads[0],subject:$('subject').value,body:$('body').value})});
+    const d = await r.json();
+    $('previewArea').innerHTML = `<div class="preview"><div class="ps">Subject: ${esc(d.subject)}</div>${esc(d.body)}</div>`;
+  }
+
+  async function startCampaign(){
+    msg('campaignBanner','');
+    const r = await fetch('/api/campaign/start',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({leads:currentLeads,subject:$('subject').value,body:$('body').value,fromName:$('fromName').value})});
+    const d = await r.json();
+    if (!r.ok){ msg('campaignBanner', d.error || 'Could not start.','err'); return; }
+    msg('campaignBanner',`Campaign started — ${d.total} emails queued, one every 3–4 minutes.`,'ok');
+    $('startBtn').style.display='none'; $('stopBtn').style.display='inline-flex';
+    document.querySelector('[data-view="activity"]').click();
+    pollStatus(); if (statusTimer) clearInterval(statusTimer); statusTimer = setInterval(pollStatus, 5000);
+  }
+
+  async function stopCampaign(){ await fetch('/api/campaign/stop',{method:'POST'}); pollStatus(); }
+
+  async function pollStatus(){
+    const s = await (await fetch('/api/campaign/status')).json();
+    if (s.status === 'idle') return;
+    $('stSent').textContent = s.sent; $('stPending').textContent = s.pending;
+    $('stFailed').textContent = s.failed; $('stStatus').textContent = s.status;
+    $('kSent').textContent = s.sent; $('kQueue').textContent = s.pending;
+    $('bSent').textContent = s.sent; $('bQueue').textContent = s.pending; $('bFailed').textContent = s.failed;
+    $('bannerTitle').textContent = s.status === 'running' ? 'Campaign running' : 'Campaign ' + s.status;
+    if (s.nextSendAt && s.status === 'running'){
+      const secs = Math.max(0, Math.round((s.nextSendAt - Date.now())/1000));
+      $('nextSend').textContent = `Next email in ~${secs}s`;
+      $('bannerDesc').textContent = `Sending to ${s.total} leads · next in ~${secs}s`;
+      $('agentSub').textContent = `Sending · ${s.sent}/${s.total}`;
+    } else { $('nextSend').textContent = ''; }
+    $('campaignRows').innerHTML = (s.recipients||[]).map(r =>
+      `<tr><td><span class="tag ${r.status}">${r.status}</span></td><td>${esc(r.name)}</td><td class="mono">${esc(r.email)}</td><td>${esc(r.error || (r.sentAt ? new Date(r.sentAt).toLocaleTimeString() : ''))}</td></tr>`).join('');
+    if (s.status === 'completed' || s.status === 'stopped'){
+      if (statusTimer) clearInterval(statusTimer);
+      $('startBtn').style.display='inline-flex'; $('stopBtn').style.display='none';
+      $('bannerDesc').textContent = `Campaign ${s.status} — ${s.sent} sent, ${s.failed} failed`;
+      $('agentSub').textContent = 'Scrape · Personalize · Send';
+    }
+  }
+
+  function downloadCsv(){
+    if (!currentLeads.length) return;
+    const cols = COLUMNS.map(c=>c.key), header = COLUMNS.map(c=>c.label);
+    const e = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+    const lines = [header.join(',')];
+    for (const l of currentLeads) lines.push(cols.map(k=>e(l[k])).join(','));
+    const blob = new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href=url; a.download=`leads-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
+  }
+
+  /* Restores the last saved result set. Also available via ?demo=1 or Ctrl+Shift+L. */
+  async function preload(){
+    const b = $('recentBtn');
+    if (b){ b.disabled = true; b.innerHTML = '<span class="spin" style="border-color:rgba(0,0,0,.18);border-top-color:#334155"></span> Loading…'; }
+    try{
+      const d = await (await fetch('/api/demo-leads')).json();
+      $('keyword').value = 'dental clinic';
+      $('location').value = 'Austin, Texas';
+      render(d.leads || []);
+      msg('scrapeBanner','');
+      $('bannerTitle').textContent = 'Leads ready';
+      $('bannerDesc').textContent = `${(d.leads||[]).length} dental clinics · Austin, Texas`;
+    }catch(e){ /* silent */ }
+    finally{ if (b){ b.disabled = false; b.textContent = 'Recent Search'; } }
+  }
+  if (new URLSearchParams(location.search).has('demo')) preload();
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l'){ e.preventDefault(); preload(); }
+  });
+
+  $('recentBtn').addEventListener('click', preload);
+  $('scrapeBtn').addEventListener('click', scrape);
+  $('personalizeBtn').addEventListener('click', personalize);
+  $('csvBtn').addEventListener('click', downloadCsv);
+  $('previewBtn').addEventListener('click', preview);
+  $('startBtn').addEventListener('click', startCampaign);
+  $('stopBtn').addEventListener('click', stopCampaign);
+  $('clearBtn').addEventListener('click', () => { render([]); msg('scrapeBanner',''); });
+  document.addEventListener('keydown', e => { if (e.key==='Enter' && (e.target.id==='keyword'||e.target.id==='location')) scrape(); });
+  pollStatus().catch(()=>{});
+</script>
+</body>
+</html>
