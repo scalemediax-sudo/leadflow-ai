@@ -135,7 +135,6 @@ MIN_GAP_SECONDS=${minGap}
 MAX_GAP_SECONDS=${maxGap}
 
 PORT=${cur.PORT || '3000'}
-DEMO_MODE=${cur.DEMO_MODE || 'false'}
 `;
   fs.writeFileSync(ENV_PATH, env);
 

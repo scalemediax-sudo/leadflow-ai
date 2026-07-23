@@ -75,7 +75,6 @@ Everything lives in `.env` (created by `npm run setup`).
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | Any Groq-hosted model |
 | `GOOGLE_MAPS_ACTOR` | `compass/crawler-google-places` | Swap in any Apify actor |
 | `APOLLO_ACTOR` | `code_crafter/apollo-io-scraper` | Apollo needs a search URL |
-| `DEMO_MODE` | `false` | Uses a bundled sample dataset instead of live API calls — useful for demos |
 | `SMTP_TLS_INSECURE` | `false` | Set `true` only if antivirus/proxy breaks the SMTP TLS handshake |
 
 ---
@@ -102,7 +101,6 @@ setup.js             Interactive onboarding wizard
 lib/personalize.js   Website scrape + Groq line generation
 lib/mailer.js        Gmail SMTP transport
 lib/campaign.js      Throttled send queue + template rendering
-lib/demoData.js      Fictional sample leads for demo mode
 public/index.html    The dashboard (single file, no build step)
 ```
 

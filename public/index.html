@@ -289,7 +289,6 @@
         <button class="b-primary" id="scrapeBtn">Find Leads</button>
         <button class="b-purple" id="personalizeBtn" disabled>Personalize with AI</button>
         <button class="b-ghost" id="csvBtn" disabled>Export CSV</button>
-        <button class="b-ghost" id="recentBtn">Recent Search</button>
         <button class="b-ghost" id="clearBtn">Clear</button>
       </div>
     </div>
@@ -377,13 +376,7 @@ Your Name</textarea>
 
 <script>
   const $ = (id) => document.getElementById(id);
-  let currentLeads = [], statusTimer = null, DEMO = false;
-  const wait = ms => new Promise(r => setTimeout(r, ms));
-  const savedLeads = () => fetch('/api/demo-leads').then(r => r.json()).then(d => d.leads || []);
-  const SEARCH_MS = 2500, WRITE_MS = 2000;
-  // Resolved before any action reads DEMO, so an early click can't fall
-  // through to the live scraper while /api/health is still in flight.
-  let healthReady;
+  let currentLeads = [], statusTimer = null;
 
   const COLUMNS = [
     { key:'source', label:'SOURCE' }, { key:'name', label:'BUSINESS' },
@@ -414,11 +407,10 @@ Your Name</textarea>
 
   /* ---- health ---- */
   const yes = '<span class="tag sent">Connected</span>', no = '<span class="tag failed">Not configured</span>';
-  healthReady = fetch('/api/health').then(r => r.json()).then(d => {
+  fetch('/api/health').then(r => r.json()).then(d => {
     $('dotApify').className = 'dot ' + (d.hasToken ? 'ok' : 'off');
     $('dotAI').className    = 'dot ' + (d.hasGroq ? 'ok' : 'off');
     $('dotGmail').className = 'dot ' + (d.hasGmail ? 'ok' : 'off');
-    DEMO = !!d.demoMode;
     $('setApify').innerHTML = d.hasToken ? yes : no;
     $('setAI').innerHTML    = d.hasGroq ? yes : no;
     $('setGmail').innerHTML = d.hasGmail ? yes : no;
@@ -480,15 +472,6 @@ Your Name</textarea>
     msg('scrapeBanner','');
     const b = $('scrapeBtn'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Searching…';
     try{
-      await healthReady;
-      if (DEMO){
-        const [leadsRaw] = await Promise.all([savedLeads(), wait(SEARCH_MS)]);
-        const leads = leadsRaw.map(({ personalizedLine, ...rest }) => rest);
-        render(leads);
-        $('bannerTitle').textContent = 'Leads ready';
-        $('bannerDesc').textContent = `${leads.length} results · ${$('keyword').value || 'dental clinic'} · ${$('location').value || 'Austin, Texas'}`;
-        return;
-      }
       const r = await fetch('/api/scrape',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({keyword:$('keyword').value,location:$('location').value,maxResults:$('maxResults').value,apolloUrl:$('apolloUrl').value,sources})});
       const d = await r.json();
@@ -504,14 +487,6 @@ Your Name</textarea>
     const b = $('personalizeBtn'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Writing…';
     msg('scrapeBanner','');
     try{
-      await healthReady;
-      if (DEMO){
-        const [saved] = await Promise.all([savedLeads(), wait(WRITE_MS)]);
-        const lines = new Map(saved.map(l => [l.email, l.personalizedLine]));
-        render(currentLeads.map(l => ({ ...l, personalizedLine: lines.get(l.email) || l.personalizedLine || '' })));
-        msg('scrapeBanner', `Personalized lines written for ${currentLeads.length} leads.`, 'ok');
-        return;
-      }
       const r = await fetch('/api/personalize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leads:currentLeads})});
       const d = await r.json();
       if (!r.ok){ msg('scrapeBanner', d.error || 'Personalization failed.','err'); return; }
@@ -578,27 +553,7 @@ Your Name</textarea>
     a.href=url; a.download=`leads-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
   }
 
-  /* Restores the last saved result set. Also available via ?demo=1 or Ctrl+Shift+L. */
-  async function preload(){
-    const b = $('recentBtn');
-    if (b){ b.disabled = true; b.innerHTML = '<span class="spin" style="border-color:rgba(0,0,0,.18);border-top-color:#334155"></span> Loading…'; }
-    try{
-      const d = await (await fetch('/api/demo-leads')).json();
-      $('keyword').value = 'dental clinic';
-      $('location').value = 'Austin, Texas';
-      render(d.leads || []);
-      msg('scrapeBanner','');
-      $('bannerTitle').textContent = 'Leads ready';
-      $('bannerDesc').textContent = `${(d.leads||[]).length} dental clinics · Austin, Texas`;
-    }catch(e){ /* silent */ }
-    finally{ if (b){ b.disabled = false; b.textContent = 'Recent Search'; } }
-  }
-  if (new URLSearchParams(location.search).has('demo')) preload();
-  document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l'){ e.preventDefault(); preload(); }
-  });
 
-  $('recentBtn').addEventListener('click', preload);
   $('scrapeBtn').addEventListener('click', scrape);
   $('personalizeBtn').addEventListener('click', personalize);
   $('csvBtn').addEventListener('click', downloadCsv);

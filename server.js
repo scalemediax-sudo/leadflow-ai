@@ -6,8 +6,8 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { personalizeLeads } from './lib/personalize.js';
 import { mailerConfigured } from './lib/mailer.js';
+import { isValidEmail } from './lib/email.js';
 import { startCampaign, stopCampaign, getStatus, previewEmail } from './lib/campaign.js';
-import { getDemoLeads } from './lib/demoData.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -99,7 +99,6 @@ app.get('/api/health', (req, res) => {
     hasToken: Boolean(APIFY_TOKEN),
     hasGroq: Boolean(process.env.GROQ_API_KEY),
     hasGmail: mailerConfigured(),
-    demoMode: String(process.env.DEMO_MODE).toLowerCase() === 'true',
   });
 });
 
@@ -177,7 +176,7 @@ app.post('/api/scrape', async (req, res) => {
     const allLeads = results.flat();
 
     // Only keep leads that have a usable email address.
-    const leads = allLeads.filter((l) => l.email && l.email.includes('@'));
+    const leads = allLeads.filter((l) => isValidEmail(l.email));
     const dropped = allLeads.length - leads.length;
     if (dropped > 0) {
       warnings.push(`${dropped} lead(s) had no email and were skipped.`);
@@ -198,12 +197,6 @@ app.get('/api/campaign/defaults', (req, res) => {
   } catch {
     res.json({});
   }
-});
-
-// --- Demo data: 30 fictional Austin dental clinics for product demos ---
-app.get('/api/demo-leads', (req, res) => {
-  const leads = getDemoLeads();
-  res.json({ count: leads.length, leads, demo: true });
 });
 
 // --- Personalization: visit each lead's website and draft a custom opening line ---
@@ -229,8 +222,7 @@ app.post('/api/campaign/preview', (req, res) => {
 
 app.post('/api/campaign/start', (req, res) => {
   const { leads = [], subject = '', body = '', fromName = '' } = req.body || {};
-  const isDemoRun = leads.some((l) => l.isDemo);
-  if (!isDemoRun && !mailerConfigured()) {
+  if (!mailerConfigured()) {
     return res.status(400).json({
       error: 'Gmail is not configured. Add GMAIL_USER and GMAIL_APP_PASSWORD to your .env and restart.',
     });
